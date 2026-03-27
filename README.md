@@ -44,7 +44,7 @@ Todos los skills están construidos sobre **OpenClaw** (MIT) y son compatibles c
 | Repo | Descripción | Visibilidad |
 |---|---|---|
 | [`skills-free`](https://github.com/centriqs-ai/skills-free) | Skills gratuitos para OpenClaw — LATAM & Argentina | 🌐 Público |
-| `skills-paid` | Skills premium con integraciones en tiempo real | 🔒 Privado |
+| [`skills-paid`](https://github.com/centriqs-ai/skills-paid) | Skills premium con integraciones en tiempo real | 🔒 Privado |
 | [`website`](https://github.com/centriqs-ai/website) | Landing page — centriqs.io | 🔒 Privado |
 
 ---
