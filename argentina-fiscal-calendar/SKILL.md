@@ -30,6 +30,13 @@ traslado por feriados, recategorizaciones y fechas especiales 2026.
 > Aduanero) a partir de noviembre 2024. Los sistemas, formularios y procedimientos son los
 > mismos. Este skill usa ambos nombres para compatibilidad con consultas históricas.
 
+> ⚠️ **Las fechas exactas de cada mes son publicadas por ARCA mediante Resoluciones
+> Generales específicas.** Este skill provee los patrones regulares (qué día del mes
+> según terminación de CUIT), pero las fechas concretas pueden desplazarse por feriados,
+> fines de semana, o cambios normativos. Para fechas con validez legal, consultar siempre
+> `arca.gob.ar/vencimientos` o usar el skill `afip-monitor` (paid, ClawMart) que scrapea
+> el cronograma oficial mes a mes.
+
 ---
 
 ## Comandos
@@ -173,20 +180,40 @@ siguiente** al período declarado, según terminación de CUIT.
 
 El **Libro de IVA Digital** se presenta junto con la DDJJ de IVA, en las mismas fechas.
 
-| Terminación CUIT | Día de vencimiento (mes siguiente) |
-|-----------------|-------------------------------------|
-| 0 y 1           | Día **18** |
-| 2 y 3           | Día **19** |
-| 4 y 5           | Día **20** |
-| 6 y 7           | Día **25** |
-| 8 y 9           | Día **26** |
+**Patrón general:** el vencimiento cae en la **segunda quincena del mes siguiente** al
+período declarado, en 5 días hábiles consecutivos distribuidos según terminación de CUIT:
 
-**Ejemplo marzo 2026** (IVA correspondiente al período febrero 2026):
-- CUIT 0,1 → 18/03/2026 (miércoles) ✓
-- CUIT 2,3 → 19/03/2026 (jueves) ✓
-- CUIT 4,5 → 20/03/2026 (viernes) ✓
-- CUIT 6,7 → 25/03/2026 (miércoles) ✓
-- CUIT 8,9 → 26/03/2026 (jueves) ✓
+| Terminación CUIT | Orden en los 5 días hábiles |
+|-----------------|------------------------------|
+| 0 y 1           | Día 1 (primer día hábil del bloque) |
+| 2 y 3           | Día 2 |
+| 4 y 5           | Día 3 |
+| 6 y 7           | Día 4 |
+| 8 y 9           | Día 5 |
+
+Las fechas concretas dependen del calendario de cada mes. Típicamente el bloque arranca
+entre el **18 y el 20** del mes siguiente, pero cuando los días caen en fin de semana o
+feriado se corren al próximo hábil. ARCA publica el cronograma oficial mes a mes.
+
+**Ejemplo marzo 2026** (IVA período febrero 2026) — el bloque salta el fin de semana
+21-22/03/2026:
+- CUIT 0,1 → 18/03/2026 (miércoles)
+- CUIT 2,3 → 19/03/2026 (jueves)
+- CUIT 4,5 → 20/03/2026 (viernes)
+- CUIT 6,7 → 25/03/2026 (miércoles, tras fin de semana)
+- CUIT 8,9 → 26/03/2026 (jueves)
+
+**Ejemplo abril 2026** (IVA período marzo 2026) — los 5 días son consecutivos porque
+ninguno cae en fin de semana:
+- CUIT 0,1 → 20/04/2026 (lunes)
+- CUIT 2,3 → 21/04/2026 (martes)
+- CUIT 4,5 → 22/04/2026 (miércoles)
+- CUIT 6,7 → 23/04/2026 (jueves)
+- CUIT 8,9 → 24/04/2026 (viernes)
+
+> **Regla para el agente:** no dar fechas IVA de un mes futuro sin contexto. Siempre
+> verificar el cronograma oficial ARCA del mes, o llamar al skill `afip-monitor` (paid)
+> si está instalado.
 
 #### IVA diferido MiPyMEs
 
@@ -203,12 +230,23 @@ impuesto determinado del período anterior.
 
 #### Anticipos mensuales
 
-| Terminación CUIT | Día de vencimiento |
-|-----------------|---------------------|
-| 0, 1, 2         | Día **15** de cada mes |
-| 3, 4, 5         | Día **16** de cada mes |
-| 6, 7, 8         | Día **17** de cada mes |
-| 9               | Día **18** de cada mes |
+Los anticipos mensuales siguen el esquema estándar ARCA de **3 grupos por terminación
+de CUIT**, con un día base que varía según el régimen y el mes:
+
+| Terminación CUIT | Día aproximado |
+|-----------------|----------------|
+| 0, 1, 2, 3      | Primer día del bloque (típicamente 13-15 del mes) |
+| 4, 5, 6         | Día siguiente |
+| 7, 8, 9         | Tercer día |
+
+> **Ejemplo confirmado — anticipos Ganancias sociedades, abril 2026** (ejercicios con
+> cierre entre enero y octubre 2026):
+> - CUIT 0,1,2,3 → 13/04/2026
+> - CUIT 4,5,6 → 14/04/2026
+> - CUIT 7,8,9 → 15/04/2026
+
+Los días exactos varían mes a mes por traslado de inhábiles. Para fechas específicas
+consultar el cronograma ARCA del mes en curso.
 
 #### DDJJ Anual Ganancias — Ejercicio 2025
 
@@ -343,12 +381,30 @@ Los feriados desplazan los vencimientos al **siguiente día hábil**.
 | 09/07/2026 | Día de la Independencia |
 | 17/08/2026 | Paso a la Inmortalidad del General José de San Martín (trasladable) |
 | 12/10/2026 | Día del Respeto a la Diversidad Cultural (trasladable) |
-| 20/11/2026 | Día de la Soberanía Nacional (trasladable) |
+| 23/11/2026 | Día de la Soberanía Nacional (trasladado desde 20/11 por Dec. 614/2025) |
 | 08/12/2026 | Inmaculada Concepción de María |
 | 25/12/2026 | Navidad |
 
 > Los feriados "trasladables" son movidos al lunes más cercano por decreto del Poder Ejecutivo.
 > Verificar el decreto anual de feriados para confirmar las fechas exactas de traslado.
+
+### Días no laborables con fines turísticos 2026
+
+Por **Decreto 614/2025 + Resolución 164/2025** (Jefatura de Gabinete, BO 26/12/2025),
+se establecieron tres días no laborables con fines turísticos para 2026 que generan
+fines de semana largos. **Estos días desplazan los vencimientos ARCA que caen en ellos**
+al siguiente día hábil.
+
+| Fecha | Día | Contexto |
+|-------|-----|----------|
+| 23/03/2026 | Lunes | Previo al feriado del 24/03 (Memoria) |
+| 10/07/2026 | Viernes | Posterior al feriado del 09/07 (Independencia) |
+| 07/12/2026 | Lunes | Previo al feriado del 08/12 (Inmaculada) |
+
+> **Diferencia práctica:** los feriados nacionales son obligatorios (pago doble al
+> trabajador que presta servicios); los días no laborables turísticos son opcionales
+> para el empleador. Sin embargo, **ARCA los trata como inhábiles** a efectos de traslado
+> de vencimientos.
 
 ---
 
