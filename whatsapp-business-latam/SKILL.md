@@ -271,7 +271,7 @@ o para mensajes automatizados (recordatorios, alertas, notificaciones).
 
 ```bash
 curl -X POST \
-  "https://graph.facebook.com/v19.0/<PHONE_NUMBER_ID>/messages" \
+  "https://graph.facebook.com/v23.0/<PHONE_NUMBER_ID>/messages" \
   -H "Authorization: Bearer <ACCESS_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -476,7 +476,7 @@ wa_send_template() {
   params="${params%,}"  # Quitar última coma
 
   curl -s -X POST \
-    "https://graph.facebook.com/v19.0/${PHONE_NUMBER_ID}/messages" \
+    "https://graph.facebook.com/v23.0/${PHONE_NUMBER_ID}/messages" \
     -H "Authorization: Bearer ${WA_ACCESS_TOKEN}" \
     -H "Content-Type: application/json" \
     -d "{
@@ -516,17 +516,27 @@ wa_send_template() {
 
 ## Compliance — Reglas para no perder la cuenta
 
-### Ventana de 24 horas
+### Ventana de servicio de 24 horas (Customer Service Window)
 
-WhatsApp distingue dos tipos de conversaciones:
+Cuando un usuario te escribe un mensaje, se abre automáticamente una **Customer Service
+Window (CSW) de 24 horas**. Cada mensaje que el usuario envía reinicia el contador.
 
-| Tipo | Cuándo aplica | Templates requeridos | Costo |
-|------|--------------|---------------------|-------|
-| **Conversación de servicio** | Dentro de las 24hs de que el usuario escribió | No (respuesta libre) | Menor |
-| **Conversación de negocio** | Fuera de las 24hs o iniciada por la empresa | Sí (HSM aprobado) | Mayor |
+**Qué podés hacer dentro de la CSW (todo gratis):**
+- Enviar cualquier cantidad de mensajes de texto libre
+- Enviar imágenes, documentos, audios, ubicaciones
+- Enviar **templates de utility** (sin costo, desde julio 2025)
 
-**Regla práctica:** si el cliente te escribió hace menos de 24 horas, podés responder
-con texto libre. Si pasaron más de 24 horas, solo podés usar templates aprobados.
+**Qué NO podés hacer dentro de la CSW:**
+- Enviar templates de marketing o autenticación (siempre tienen costo)
+
+**Fuera de la CSW (más de 24hs desde el último mensaje del usuario):**
+- Solo podés enviar templates aprobados
+- Cada template delivered se cobra según su categoría (ver sección Costos)
+
+**Regla práctica para PyMEs:** mantener la conversación activa es gratis. Si un cliente
+escribe una consulta, el agente puede responder todo lo necesario sin costo, incluso
+enviar confirmaciones o recordatorios con templates de utility — siempre que sea dentro
+de las 24hs desde el último mensaje del cliente.
 
 ### Opt-in obligatorio
 
@@ -546,17 +556,27 @@ Lo que NO es opt-in válido:
 > Guardar evidencia del opt-in por cliente. Si Meta audita tu cuenta y no podés demostrar
 > el consentimiento, el número puede ser baneado.
 
-### Rate limits
+### Rate limits — Messaging Tiers
 
-| Nivel de cuenta | Conversaciones de negocio / día |
-|----------------|--------------------------------|
+Meta limita la cantidad de **usuarios únicos** a los que podés iniciar conversaciones
+por día (los mensajes entrantes y respuestas dentro de CSW no cuentan contra el límite).
+
+| Tier | Usuarios únicos / 24hs |
+|------|------------------------|
 | Sin verificar | 250 |
-| Verificada (Nivel 1) | 1,000 |
-| Nivel 2 | 10,000 |
-| Nivel 3 | 100,000 |
+| Tier 1 (cuenta verificada) | 1,000 |
+| Tier 2 | 10,000 |
+| Tier 3 | 100,000 |
+| Tier 4 | Ilimitado |
 
-Para subir de nivel: mantener quality rating en "Verde" durante 7 días consecutivos y
-enviar el volumen del nivel inferior de forma consistente.
+**Cómo se sube de tier:**
+- Mantener quality rating en **Verde** durante 7 días consecutivos
+- Enviar al menos el 50% del volumen del tier actual durante esos 7 días
+- El upgrade es automático (no requiere solicitud)
+
+**Cómo se baja de tier:**
+- Quality rating en **Rojo** durante 7 días → bajás un tier
+- Quality rating en **Rojo** persistente → suspensión del número
 
 ### Quality Rating
 
@@ -568,6 +588,34 @@ Meta mide la calidad de tu cuenta según:
 
 **Si cae a "Amarillo":** recibís una advertencia. Reducir volumen de envíos inmediatamente.
 **Si cae a "Rojo":** el número queda en pausa. Puede resultar en baneo si no mejora.
+
+---
+
+## Free Entry Points — la ventana de 72 horas
+
+Meta abre una ventana especial de **72 horas de mensajes completamente gratis** cuando
+el usuario entra a tu WhatsApp a través de:
+
+- **Click-to-WhatsApp Ads** (anuncios en Facebook/Instagram que abren el chat)
+- **Facebook Page CTA button** ("Enviar mensaje" en tu página de Facebook)
+- Anuncios de WhatsApp Flow
+
+Durante esas 72 horas:
+- Podés enviar cualquier cantidad de mensajes de cualquier categoría (incluido marketing)
+- **Sin costo** para ninguno de ellos
+- El contador se reinicia con cada nuevo mensaje del usuario dentro de la ventana
+
+**Por qué es importante para PyMEs argentinas:**
+
+Si hacés campañas pagas en Meta Ads con CTA a WhatsApp, el costo de los mensajes
+posteriores queda incluido en el costo del ad. Esto cambia la matemática del customer
+acquisition: lo que pagás es solo el ad, no los mensajes de follow-up.
+
+**Estrategia recomendada:**
+1. Correr campaña de Click-to-WhatsApp Ads con presupuesto definido
+2. Responder rápido (ventana de 72hs empieza con el click)
+3. Cerrar la venta o agendar reunión dentro de las 72hs
+4. A partir de la 73ª hora, si necesitás re-engagement, usar utility templates (paid)
 
 ---
 
@@ -613,30 +661,59 @@ Antes de enviar el primer mensaje de producción, verificar que:
 
 ## Costos estimados para PyMEs argentinas
 
-Los costos de la API de WhatsApp Business varían por país y tipo de conversación.
-Referencia: `developers.facebook.com/docs/whatsapp/pricing`
+> ⚠️ **Cambio importante — julio 2025:** Meta migró de un modelo de pricing
+> "per-conversation" (24hs) a un modelo **per-message**. Todo este skill está
+> actualizado al nuevo modelo. Referencia oficial: `business.whatsapp.com/products/platform-pricing`
 
-### Precios por conversación (Argentina, 2026 — verificar actualización)
+### Qué es gratis en el modelo per-message (muy importante para PyMEs)
 
-| Tipo de conversación | Costo aprox. USD |
-|---------------------|-----------------|
-| Servicio (iniciada por usuario, dentro de 24hs) | USD 0.0068 |
-| Utilidad (template, iniciada por empresa) | USD 0.0068 |
-| Autenticación (OTP) | USD 0.0135 |
-| Marketing (template promocional) | USD 0.0360 |
+| Categoría | Costo |
+|-----------|-------|
+| **Service messages** (cualquier mensaje dentro de la Customer Service Window) | **GRATIS sin límite** |
+| **Utility templates** enviados dentro de la CSW | **GRATIS sin límite** |
+| **Free Entry Points** — usuarios que entran via Click-to-WhatsApp Ads o CTA de Facebook Page | **72hs de mensajes gratis** (incluido marketing) |
 
-### Estimación mensual para una PyME típica
+Esto es un cambio estructural: **una PyME con tráfico entrante orgánico (clientes que
+inician la conversación) puede operar con costo casi nulo**.
 
-| Caso de uso | Volumen/mes | Costo aprox. USD/mes |
-|------------|-------------|---------------------|
-| Recordatorios de turno (estudio contable, 50 clientes) | 200 mensajes | USD 1.36 |
-| Alertas de vencimiento AFIP (100 clientes) | 400 mensajes | USD 2.72 |
-| Notificaciones de pedido (e-commerce pequeño) | 500 mensajes | USD 3.40 |
-| **Total estimado PyME chica** | **~1,000 conv/mes** | **~USD 7-15/mes** |
+### Qué se paga (modelo per-message, por template delivered)
 
-> Los primeros 1,000 conversaciones de servicio por mes son **gratuitas** desde marzo 2024.
-> Los costos de templates de utilidad y marketing se cobran desde el primer mensaje.
-> Confirmar pricing actual en el Business Manager antes de presupuestar.
+| Categoría | Cuándo aplica |
+|-----------|---------------|
+| **Utility template** | Enviado **fuera** de la CSW (recordatorio proactivo sin conversación previa reciente) |
+| **Marketing template** | Campañas, promociones, bienvenidas sin conversación previa |
+| **Authentication template** | Códigos de verificación, OTPs, 2FA |
+
+Las tarifas exactas por país y categoría están en el sitio oficial de Meta. Meta ajusta
+precios periódicamente — no hardcodear valores en integraciones productivas.
+
+### Volume tiers (descuentos por volumen)
+
+Desde julio 2025, Meta aplica **tiered pricing** para utility y authentication:
+cuanto más envíes, menor es el costo unitario. Los tiers se definen por mercado y se
+calculan mensualmente según el volumen acumulado del mes.
+
+### Estimación de costo mensual (escenarios reales)
+
+**Escenario A — Estudio contable con 50 clientes, solo recordatorios ARCA:**
+- Clientes escriben consultas durante el mes (genera CSW): service messages gratis
+- ~50 recordatorios proactivos de vencimiento por mes (utility fuera de CSW)
+- **Costo estimado: USD 1-3/mes** (solo los utility fuera de CSW)
+
+**Escenario B — E-commerce chico con 500 pedidos/mes:**
+- Cliente compra y recibe confirmación (dentro de la CSW si preguntó algo antes): gratis
+- Actualización de envío (utility, mayoría dentro de CSW): gratis
+- Recordatorio de carrito abandonado (marketing, fuera de CSW): paid
+- **Costo estimado: USD 5-20/mes** según mix
+
+**Escenario C — PyME con estrategia de CTWA Ads:**
+- Leads llegan via Click-to-WhatsApp Ads → **72hs gratis** para vender
+- Mensajes de seguimiento post-72hs: utility paid
+- **Costo estimado: USD 10-30/mes** (pero con ROI muy alto por cost-per-lead bajo)
+
+> **Factor clave:** el costo real depende de la proporción entre mensajes dentro y fuera
+> de la CSW. Una PyME que fomenta que el cliente inicie la conversación (respondiendo
+> rápido, usando CTWA Ads, mostrando el número en redes) paga muy poco.
 
 ---
 
@@ -647,7 +724,7 @@ las siguientes 24 horas. Ejemplo de respuesta automática vía API:
 
 ```bash
 curl -X POST \
-  "https://graph.facebook.com/v19.0/${PHONE_NUMBER_ID}/messages" \
+  "https://graph.facebook.com/v23.0/${PHONE_NUMBER_ID}/messages" \
   -H "Authorization: Bearer ${WA_ACCESS_TOKEN}" \
   -H "Content-Type: application/json" \
   -d '{
@@ -673,7 +750,7 @@ ACCESS_TOKEN="tu_access_token"
 NUMERO_DESTINO="549XXXXXXXXXX"  # Tu propio número para prueba
 
 curl -X POST \
-  "https://graph.facebook.com/v19.0/${PHONE_NUMBER_ID}/messages" \
+  "https://graph.facebook.com/v23.0/${PHONE_NUMBER_ID}/messages" \
   -H "Authorization: Bearer ${ACCESS_TOKEN}" \
   -H "Content-Type: application/json" \
   -d "{
