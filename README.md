@@ -19,7 +19,7 @@ Publicados en [ClawHub](https://clawhub.ai/centriqs) — instalación en un coma
 
 ## Skills pagos
 
-Integraciones en tiempo real con APIs de producción. Disponibles en [ClawMart](https://centriqs.gumroad.com):
+Integraciones en tiempo real con APIs de producción. Disponibles en [Gumroad](https://centriqs.gumroad.com):
 
 | Skill | Descripción | Precio |
 |---|---|---|
