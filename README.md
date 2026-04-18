@@ -19,12 +19,12 @@ Publicados en [ClawHub](https://clawhub.ai/centriqs) — instalación en un coma
 
 ## Skills pagos
 
-Integraciones en tiempo real con APIs de producción. Disponibles en [ClawMart](https://clawmart.ai/centriqs):
+Integraciones en tiempo real con APIs de producción. Disponibles en [ClawMart](https://centriqs.gumroad.com):
 
 | Skill | Descripción | Precio |
 |---|---|---|
-| [`afip-monitor`](https://clawmart.ai/centriqs/afip-monitor) | Scraping en vivo de vencimientos AFIP/ARCA, filtrado por CUIT, alertas proactivas | USD 29 |
-| [`mercadopago-reconciler`](https://clawmart.ai/centriqs/mercadopago-reconciler) | Conciliación automática de cobros MercadoPago contra registros contables | USD 49 |
+| [`afip-monitor`](https://centriqs.gumroad.com/l/arca-monitor) | Scraping en vivo de vencimientos AFIP/ARCA, filtrado por CUIT, alertas proactivas | USD 29 |
+| [`mercadopago-reconciler`](https://centriqs.gumroad.com/l/mercadopago-reconciler) | Conciliación automática de cobros MercadoPago contra registros contables | USD 49 |
 
 ---
 
